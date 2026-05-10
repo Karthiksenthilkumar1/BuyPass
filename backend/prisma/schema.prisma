@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String       @id @default(uuid())
+  name      String
+  email     String       @unique
+  password  String
+  role      Role         @default(USER)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  bookings    Booking[]
+  movieDiary  MovieDiary[]
+  watchlists  Watchlist[]
+  theatres    Theatre[]    @relation("TheatreOwner")
+}
+
+enum Role {
+  USER
+  ADMIN
+  THEATRE_OWNER
+}
+
+model Movie {
+  id              String       @id @default(uuid())
+  title           String
+  description     String
+  language        String
+  genre           String
+  durationMinutes Int
+  releaseDate     DateTime
+  posterUrl       String
+  trailerUrl      String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  shows       Show[]
+  movieDiary  MovieDiary[]
+  watchlists  Watchlist[]
+}
+
+model Theatre {
+  id        String   @id @default(uuid())
+  name      String
+  city      String
+  location  String
+  ownerId   String?
+  owner     User?    @relation("TheatreOwner", fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  screens   Screen[]
+}
+
+model Screen {
+  id            String   @id @default(uuid())
+  theatreId     String
+  theatre       Theatre  @relation(fields: [theatreId], references: [id])
+  name          String
+  format        String   // e.g., 2D, 3D, IMAX
+  totalCapacity Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  seats         Seat[]
+  shows         Show[]
+}
+
+model Seat {
+  id              String   @id @default(uuid())
+  screenId        String
+  screen          Screen   @relation(fields: [screenId], references: [id])
+  row             String
+  number          Int
+  category        String   // Premium, Standard
+  priceMultiplier Float    @default(1.0)
+
+  tickets         Ticket[]
+}
+
+model Show {
+  id        String   @id @default(uuid())
+  movieId   String
+  movie     Movie    @relation(fields: [movieId], references: [id])
+  screenId  String
+  screen    Screen   @relation(fields: [screenId], references: [id])
+  startTime DateTime
+  basePrice Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings  Booking[]
+}
+
+model Booking {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  showId          String
+  show            Show     @relation(fields: [showId], references: [id])
+  totalAmount     Float
+  platformFee     Float
+  taxes           Float
+  status          BookingStatus @default(PENDING)
+  paymentIntentId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tickets         Ticket[]
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+model Ticket {
+  id        String   @id @default(uuid())
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  seatId    String
+  seat      Seat     @relation(fields: [seatId], references: [id])
+  qrCode    String?
+}
+
+model MovieDiary {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  movieId       String
+  movie         Movie    @relation(fields: [movieId], references: [id])
+  rating        Int?     // 1 to 5
+  review        String?  @db.Text
+  rewatchCount  Int      @default(0)
+  watchLocation WatchLocation @default(THEATRE)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, movieId])
+}
+
+enum WatchLocation {
+  THEATRE
+  OTT
+  OTHER
+}
+
+model Watchlist {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  movieId   String
+  movie     Movie    @relation(fields: [movieId], references: [id])
+  category  WatchCategory @default(MUST_WATCH)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, movieId])
+}
+
+enum WatchCategory {
+  MUST_WATCH
+  WITH_FRIENDS
+  THEATRE_ONLY
+  OTT_WAIT
+}
