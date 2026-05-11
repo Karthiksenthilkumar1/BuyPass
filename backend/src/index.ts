@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.routes";
 import movieRoutes from "./routes/movie.routes";
 import showRoutes from "./routes/show.routes";
 import bookingRoutes from "./routes/booking.routes";
+import theatreRoutes from "./routes/theatre.routes";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/movies", movieRoutes);
 app.use("/api/shows", showRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/theatres", theatreRoutes);
 
 // Health Check Route
 app.get("/api/health", async (req: Request, res: Response) => {
