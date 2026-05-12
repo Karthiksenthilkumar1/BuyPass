@@ -25,7 +25,7 @@ export const getAllMovies = async (req: Request, res: Response) => {
 
 export const getMovieById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const movie = await prisma.movie.findUnique({
       where: { id },
       include: { shows: true },
@@ -72,11 +72,18 @@ export const createMovie = async (req: Request, res: Response) => {
 
 export const updateMovie = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const data = req.body;
+    const id = req.params.id as string;
+    const { title, description, language, genre, durationMinutes, releaseDate, posterUrl, trailerUrl } = req.body;
 
-    if (data.durationMinutes) data.durationMinutes = parseInt(data.durationMinutes);
-    if (data.releaseDate) data.releaseDate = new Date(data.releaseDate);
+    const data: Record<string, any> = {};
+    if (title !== undefined) data.title = title;
+    if (description !== undefined) data.description = description;
+    if (language !== undefined) data.language = language;
+    if (genre !== undefined) data.genre = genre;
+    if (durationMinutes !== undefined) data.durationMinutes = parseInt(durationMinutes);
+    if (releaseDate !== undefined) data.releaseDate = new Date(releaseDate);
+    if (posterUrl !== undefined) data.posterUrl = posterUrl;
+    if (trailerUrl !== undefined) data.trailerUrl = trailerUrl;
 
     const movie = await prisma.movie.update({
       where: { id },
@@ -92,7 +99,7 @@ export const updateMovie = async (req: Request, res: Response) => {
 
 export const deleteMovie = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     await prisma.movie.delete({
       where: { id },

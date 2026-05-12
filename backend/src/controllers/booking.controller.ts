@@ -31,33 +31,34 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ message: "One or more selected seats are invalid for this screen" });
     }
 
-    // 2. Check availability in a transaction-like way (Simplified for now)
-    const existingBookings = await prisma.ticket.findMany({
-      where: {
-        seatId: { in: seatIds },
-        booking: {
-          showId: showId,
-          status: "CONFIRMED",
-        },
-      },
-    });
-
-    if (existingBookings.length > 0) {
-      return res.status(400).json({ message: "One or more seats are already booked" });
-    }
-
-    // 3. Calculate total amount
-    let totalAmount = 0;
-    selectedSeats.forEach((seat) => {
-      totalAmount += show.basePrice * seat.priceMultiplier;
-    });
-
-    const platformFee = 20; // Fixed fee per booking
-    const taxes = totalAmount * 0.18; // 18% GST
-    const finalAmount = totalAmount + platformFee + taxes;
-
-    // 4. Create booking and tickets in transaction
+    // 2. Create booking in a transaction with availability check
     const booking = await prisma.$transaction(async (tx) => {
+      // Check availability inside the transaction
+      const existingBookings = await tx.ticket.findMany({
+        where: {
+          seatId: { in: seatIds },
+          booking: {
+            showId: showId,
+            status: "CONFIRMED",
+          },
+        },
+      });
+
+      if (existingBookings.length > 0) {
+        throw new Error("SEATS_ALREADY_BOOKED");
+      }
+
+      // 3. Calculate total amount
+      let totalAmount = 0;
+      selectedSeats.forEach((seat) => {
+        totalAmount += show.basePrice * seat.priceMultiplier;
+      });
+
+      const platformFee = 20; // Fixed fee per booking
+      const taxes = totalAmount * 0.18; // 18% GST
+      const finalAmount = totalAmount + platformFee + taxes;
+
+      // 4. Create booking and tickets
       const newBooking = await tx.booking.create({
         data: {
           userId,
@@ -65,9 +66,9 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
           totalAmount: finalAmount,
           platformFee,
           taxes,
-          status: "CONFIRMED", // Assume instant confirmation for now
+          status: "CONFIRMED",
           tickets: {
-            create: seatIds.map((seatId) => ({
+            create: seatIds.map((seatId: string) => ({
               seatId,
             })),
           },
@@ -83,6 +84,9 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
 
     res.status(201).json({ message: "Booking confirmed successfully", booking });
   } catch (error) {
+    if (error instanceof Error && error.message === "SEATS_ALREADY_BOOKED") {
+      return res.status(400).json({ message: "One or more seats are already booked" });
+    }
     console.error("Create booking error:", error);
     res.status(500).json({ message: "Internal server error" });
   }

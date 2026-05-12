@@ -1,32 +1,36 @@
 import { Request, Response } from "express";
 import prisma from "../lib/prisma";
+import { Prisma } from "@prisma/client";
+
+// Define the include type for type-safe access to relations
+const showInclude = {
+  movie: true,
+  screen: {
+    include: {
+      theatre: true,
+      seats: {
+        orderBy: [
+          { row: "asc" as const },
+          { number: "asc" as const },
+        ],
+      },
+    },
+  },
+  bookings: {
+    where: { status: "CONFIRMED" as const },
+    include: {
+      tickets: true,
+    },
+  },
+} satisfies Prisma.ShowInclude;
 
 export const getShowDetails = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     const show = await prisma.show.findUnique({
       where: { id },
-      include: {
-        movie: true,
-        screen: {
-          include: {
-            theatre: true,
-            seats: {
-              orderBy: [
-                { row: "asc" },
-                { number: "asc" },
-              ],
-            },
-          },
-        },
-        bookings: {
-          where: { status: "CONFIRMED" },
-          include: {
-            tickets: true,
-          },
-        },
-      },
+      include: showInclude,
     });
 
     if (!show) {
