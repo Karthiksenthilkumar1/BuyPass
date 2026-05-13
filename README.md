@@ -89,7 +89,7 @@ Granular access control ensuring that Theatre Owners only manage their propertie
 ---
 
 ## 🗺️ Future Roadmap
-- [ ] **Asset Management**: Dynamic form builder for theatre screen layouts.
+- [x] **Asset Management**: Dynamic form builder for theatre screen layouts and comprehensive Theatre Management system.
 - [ ] **Digital Passes**: QR code generation and mobile check-in system.
 - [ ] **Financial Bridge**: Integration with Stripe/Razorpay for live payments.
 - [ ] **Real-time Engine**: WebSocket integration for live seat occupancy updates.
