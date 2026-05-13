@@ -10,6 +10,7 @@ import MovieDetails from "./pages/MovieDetails";
 import Booking from "./pages/Booking";
 import AdminDashboard from "./pages/AdminDashboard";
 import OwnerDashboard from "./pages/OwnerDashboard";
+import TheatreManager from "./pages/TheatreManager";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./index.css";
 
@@ -42,6 +43,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["THEATRE_OWNER"]}>
                   <OwnerDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/owner/theatre/:id" 
+              element={
+                <ProtectedRoute allowedRoles={["THEATRE_OWNER"]}>
+                  <TheatreManager />
                 </ProtectedRoute>
               } 
             />

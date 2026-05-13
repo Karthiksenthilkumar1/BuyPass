@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Landmark, Monitor, Calendar, Settings, Plus, X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../lib/api";
@@ -90,6 +91,7 @@ const OwnerDashboard: React.FC = () => {
               theatres.map((theatre) => (
                 <TheatreItem 
                   key={theatre.id}
+                  id={theatre.id}
                   name={theatre.name} 
                   location={`${theatre.city}, ${theatre.location}`} 
                   screens={theatre._count?.screens || 0} 
@@ -210,23 +212,35 @@ const OwnerDashboard: React.FC = () => {
   );
 };
 
-const TheatreItem = ({ name, location, screens }: { name: string, location: string, screens: number }) => (
-  <motion.div whileHover={{ x: 10 }} className="glass-card" style={{ padding: "2rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-    <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-      <div className="glass" style={{ padding: "1rem", borderRadius: "12px" }}>
-        <Landmark size={32} color="var(--accent-primary)" />
+const TheatreItem = ({ id, name, location, screens }: { id: string, name: string, location: string, screens: number }) => {
+  const navigate = useNavigate();
+  return (
+    <motion.div whileHover={{ x: 10 }} className="glass-card" style={{ padding: "2rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+        <div className="glass" style={{ padding: "1rem", borderRadius: "12px" }}>
+          <Landmark size={32} color="var(--accent-primary)" />
+        </div>
+        <div>
+          <h3 style={{ fontSize: "1.3rem", marginBottom: "0.25rem" }}>{name}</h3>
+          <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>{location}</p>
+        </div>
       </div>
-      <div>
-        <h3 style={{ fontSize: "1.3rem", marginBottom: "0.25rem" }}>{name}</h3>
-        <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>{location}</p>
+      <div style={{ textAlign: "right", display: "flex", alignItems: "center", gap: "2rem" }}>
+        <div>
+          <div style={{ fontSize: "1.2rem", fontWeight: "bold" }}>{screens}</div>
+          <div style={{ color: "var(--text-secondary)", fontSize: "0.8rem" }}>Screens</div>
+        </div>
+        <button 
+          onClick={() => navigate(`/owner/theatre/${id}`)}
+          className="glass"
+          style={{ padding: "0.5rem 1rem", backgroundColor: "rgba(255, 255, 255, 0.1)", border: "none", cursor: "pointer", color: "white", borderRadius: "8px" }}
+        >
+          Manage
+        </button>
       </div>
-    </div>
-    <div style={{ textAlign: "right" }}>
-      <div style={{ fontSize: "1.2rem", fontWeight: "bold" }}>{screens}</div>
-      <div style={{ color: "var(--text-secondary)", fontSize: "0.8rem" }}>Screens</div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 const SmallStat = ({ label, value }: { label: string, value: string }) => (
   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
