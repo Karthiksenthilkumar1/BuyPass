@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../lib/api";
 import { ArrowLeft, Monitor, Loader2, Plus, LayoutGrid } from "lucide-react";
@@ -18,7 +18,7 @@ const TheatreManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
 
-  const fetchScreens = async () => {
+  const fetchScreens = useCallback(async () => {
     try {
       const response = await api.get(`/theatres/${id}/screens`);
       setScreens(response.data);
@@ -27,11 +27,16 @@ const TheatreManager: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
-    if (id) fetchScreens();
-  }, [id]);
+    const loadData = async () => {
+      if (id) {
+        await fetchScreens();
+      }
+    };
+    loadData();
+  }, [id, fetchScreens]);
 
   return (
     <div style={{ paddingTop: "8rem", paddingBottom: "5rem", maxWidth: "1200px", margin: "0 auto", padding: "8rem 2rem 5rem" }}>
