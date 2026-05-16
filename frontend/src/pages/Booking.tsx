@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import SeatMap from "../components/SeatMap";
-import { Loader2, Ticket, CreditCard, ChevronLeft } from "lucide-react";
-import { motion } from "framer-motion";
+import { Loader2, CreditCard, ChevronLeft } from "lucide-react";
 
 interface Seat {
   id: string;
@@ -113,7 +112,10 @@ const Booking: React.FC = () => {
             <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "1.1rem" }}>
                 <span style={{ color: "var(--text-secondary)" }}>Selected Seats ({selectedSeats.length})</span>
-                <span>{selectedSeats.length > 0 ? selectedSeats.map(id => show.seats.find(s => s.id === id)?.row + show.seats.find(s => s.id === id)?.number).join(", ") : "None"}</span>
+                <span>{selectedSeats.length > 0 ? selectedSeats.map(id => {
+                  const seat = show.seats.find(s => s.id === id);
+                  return seat ? `${seat.row}${seat.number}` : "";
+                }).filter(Boolean).join(", ") : "None"}</span>
               </div>
 
               <div style={{ borderTop: "1px solid var(--glass-border)", paddingTop: "1.5rem" }}>

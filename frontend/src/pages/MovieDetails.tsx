@@ -1,12 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../lib/api";
-import { Clock, Calendar, Globe, Tag, Play, ChevronLeft, Loader2 } from "lucide-react";
+import { Clock, Calendar, Globe, Tag, Play, ChevronLeft, Loader2, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
+import { useCity } from "../context/CityContext";
+
+interface Theatre {
+  id: string;
+  name: string;
+  city: string;
+  location: string;
+}
+
+interface Screen {
+  id: string;
+  name: string;
+  theatre: Theatre;
+}
 
 interface Show {
   id: string;
   startTime: string;
+  screen?: Screen;
 }
 
 interface Movie {
@@ -25,6 +40,15 @@ const MovieDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [movie, setMovie] = useState<Movie | null>(null);
   const [loading, setLoading] = useState(true);
+  const { selectedCity } = useCity();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+  // Generate next 7 days for the date selector
+  const upcomingDates = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    return d;
+  });
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -57,6 +81,25 @@ const MovieDetails: React.FC = () => {
       </div>
     );
   }
+
+  const cityShows = movie.shows.filter(show => {
+    const showDate = new Date(show.startTime);
+    return (
+      show.screen?.theatre?.city === selectedCity &&
+      showDate.toDateString() === selectedDate.toDateString()
+    );
+  });
+  
+  const showsByTheatre: Record<string, { theatre: Theatre; shows: Show[] }> = {};
+  cityShows.forEach(show => {
+    const theatre = show.screen!.theatre;
+    if (!showsByTheatre[theatre.id]) {
+      showsByTheatre[theatre.id] = { theatre, shows: [] };
+    }
+    showsByTheatre[theatre.id].shows.push(show);
+  });
+  
+  const theatreGroups = Object.values(showsByTheatre);
 
   return (
     <div style={{ minHeight: "100vh", paddingBottom: "5rem" }}>
@@ -130,49 +173,89 @@ const MovieDetails: React.FC = () => {
               <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><Tag size={18} /> {movie.genre}</span>
             </div>
 
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", marginTop: "1rem" }}>
-              {movie.shows.map((show) => (
-                <Link 
-                  key={show.id} 
-                  to={`/booking/${show.id}`} 
-                  className="glass" 
-                  style={{ 
-                    padding: "0.5rem 1rem", 
-                    fontSize: "0.9rem",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem"
-                  }}
-                >
-                  <Play size={14} fill="currentColor" />
-                  {new Date(show.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Link>
-              ))}
-            </div>
+            <div style={{ marginTop: "2rem" }}>
+              <h2 style={{ fontSize: "1.5rem", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <MapPin size={24} color="var(--accent-primary)" />
+                Shows in {selectedCity}
+              </h2>
 
-            <p style={{ fontSize: "1.2rem", color: "var(--text-secondary)", maxWidth: "700px", lineHeight: "1.6" }}>
-              {movie.description}
-            </p>
-
-            <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
-              {movie.shows.length > 0 ? (
-                <Link 
-                  to={`/booking/${movie.shows[0].id}`}
-                  className="glass" 
-                  style={{ 
-                    backgroundColor: "var(--accent-primary)", 
-                    padding: "1rem 3rem",
-                    fontSize: "1.2rem",
-                    fontWeight: "600",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem"
-                  }}
-                >
-                  <Play size={24} fill="currentColor" /> Book Tickets
-                </Link>
+              {/* Date Selector */}
+              <div style={{ 
+                display: "flex", 
+                gap: "1rem", 
+                overflowX: "auto", 
+                paddingBottom: "1rem",
+                marginBottom: "1rem",
+                scrollbarWidth: "none" // Hide scrollbar for cleaner look
+              }}>
+                {upcomingDates.map((date, i) => {
+                  const isSelected = date.toDateString() === selectedDate.toDateString();
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedDate(date)}
+                      style={{
+                        padding: "0.75rem 1.5rem",
+                        borderRadius: "12px",
+                        border: isSelected ? "1px solid var(--accent-primary)" : "1px solid rgba(255,255,255,0.1)",
+                        backgroundColor: isSelected ? "var(--accent-primary)" : "rgba(255,255,255,0.05)",
+                        color: isSelected ? "var(--bg-primary)" : "var(--text-primary)",
+                        cursor: "pointer",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        minWidth: "80px",
+                        transition: "all 0.2s"
+                      }}
+                    >
+                      <span style={{ fontSize: "0.8rem", textTransform: "uppercase", fontWeight: "600", opacity: isSelected ? 0.9 : 0.6 }}>
+                        {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                      </span>
+                      <span style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
+                        {date.getDate()}
+                      </span>
+                      <span style={{ fontSize: "0.8rem", opacity: isSelected ? 0.9 : 0.6 }}>
+                        {date.toLocaleDateString('en-US', { month: 'short' })}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {theatreGroups.length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+                  {theatreGroups.map(({ theatre, shows }) => (
+                    <div key={theatre.id} className="glass-card" style={{ padding: "1.5rem" }}>
+                      <h3 style={{ fontSize: "1.2rem", marginBottom: "0.25rem" }}>{theatre.name}</h3>
+                      <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "1rem" }}>{theatre.location}</p>
+                      
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+                        {shows.map((show) => (
+                          <Link 
+                            key={show.id} 
+                            to={`/booking/${show.id}`} 
+                            className="glass" 
+                            style={{ 
+                              padding: "0.5rem 1rem", 
+                              fontSize: "0.9rem",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.5rem",
+                              transition: "all 0.2s"
+                            }}
+                          >
+                            <Play size={14} fill="currentColor" />
+                            {new Date(show.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <div style={{ color: "var(--text-secondary)" }}>No shows available</div>
+                <div style={{ color: "var(--text-secondary)", padding: "2rem", backgroundColor: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px dashed rgba(255,255,255,0.1)", textAlign: "center" }}>
+                  No shows available for {movie.title} in {selectedCity} on {selectedDate.toLocaleDateString()}
+                </div>
               )}
             </div>
           </div>

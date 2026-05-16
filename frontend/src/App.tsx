@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { CityProvider } from "./context/CityContext";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -17,7 +18,8 @@ import "./index.css";
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <CityProvider>
+        <Router>
         <div className="app">
           <Navbar />
           <Routes>
@@ -57,6 +59,7 @@ function App() {
           </Routes>
         </div>
       </Router>
+      </CityProvider>
     </AuthProvider>
   );
 }

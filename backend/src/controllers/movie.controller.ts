@@ -28,7 +28,20 @@ export const getMovieById = async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const movie = await prisma.movie.findUnique({
       where: { id },
-      include: { shows: true },
+      include: { 
+        shows: {
+          include: {
+            screen: {
+              include: {
+                theatre: true
+              }
+            }
+          },
+          orderBy: {
+            startTime: 'asc'
+          }
+        } 
+      },
     });
 
     if (!movie) {

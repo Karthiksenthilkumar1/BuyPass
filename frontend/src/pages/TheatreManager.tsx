@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../lib/api";
-import { ArrowLeft, Monitor, Loader2, Plus, LayoutGrid } from "lucide-react";
+import { ArrowLeft, Monitor, Loader2, Plus, LayoutGrid, Calendar } from "lucide-react";
 import ScreenLayoutBuilder from "../components/ScreenLayoutBuilder";
-
+import ShowSchedulerModal from "../components/ShowSchedulerModal";
 interface Screen {
   id: string;
   name: string;
@@ -17,6 +17,7 @@ const TheatreManager: React.FC = () => {
   const [screens, setScreens] = useState<Screen[]>([]);
   const [loading, setLoading] = useState(true);
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
+  const [schedulerScreenId, setSchedulerScreenId] = useState<string | null>(null);
 
   const fetchScreens = useCallback(async () => {
     try {
@@ -82,6 +83,13 @@ const TheatreManager: React.FC = () => {
                     <span style={{ fontSize: "0.8rem", padding: "0.2rem 0.5rem", backgroundColor: "rgba(255,255,255,0.1)", borderRadius: "4px" }}>{screen.format}</span>
                   </div>
                 </div>
+                <button 
+                  onClick={() => setSchedulerScreenId(screen.id)}
+                  style={{ background: "none", border: "none", color: "var(--accent-primary)", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem" }}
+                  title="Schedule Show"
+                >
+                  <Calendar size={18} />
+                </button>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)", fontSize: "0.9rem", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "1rem", marginTop: "1rem" }}>
                 <span>{screen.totalCapacity} Total Seats</span>
@@ -100,6 +108,17 @@ const TheatreManager: React.FC = () => {
             setIsBuilderOpen(false);
             fetchScreens();
           }} 
+        />
+      )}
+
+      {schedulerScreenId && (
+        <ShowSchedulerModal
+          screenId={schedulerScreenId}
+          onClose={() => setSchedulerScreenId(null)}
+          onSuccess={() => {
+            setSchedulerScreenId(null);
+            fetchScreens();
+          }}
         />
       )}
     </div>

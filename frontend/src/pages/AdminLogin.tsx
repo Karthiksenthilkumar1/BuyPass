@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Shield, Lock, Mail, Loader2, Landmark } from "lucide-react";
 import { motion } from "framer-motion";
+import api from "../lib/api";
 
 const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -18,7 +19,10 @@ const AdminLogin: React.FC = () => {
     setError("");
 
     try {
-      const user = await login(email, password);
+      const response = await api.post("/auth/signin", { email, password });
+      const { user, token } = response.data;
+      login(user, token);
+      
       if (user.role === "ADMIN") {
         navigate("/admin");
       } else if (user.role === "THEATRE_OWNER") {

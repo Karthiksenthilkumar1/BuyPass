@@ -1,10 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Ticket, User, LogOut } from "lucide-react";
+import { Ticket, User, LogOut, MapPin } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useCity, CITIES } from "../context/CityContext";
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
+  const { selectedCity, setSelectedCity } = useCity();
 
   return (
     <nav className="glass" style={{
@@ -26,6 +28,26 @@ const Navbar: React.FC = () => {
       </Link>
 
       <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", backgroundColor: "rgba(255,255,255,0.05)", padding: "0.5rem 1rem", borderRadius: "100px", border: "1px solid rgba(255,255,255,0.1)" }}>
+          <MapPin size={16} color="var(--accent-primary)" />
+          <select 
+            value={selectedCity}
+            onChange={(e) => setSelectedCity(e.target.value)}
+            style={{ 
+              background: "none", 
+              border: "none", 
+              color: "white", 
+              fontSize: "0.9rem",
+              cursor: "pointer",
+              outline: "none"
+            }}
+          >
+            {CITIES.map(city => (
+              <option key={city} value={city} style={{ backgroundColor: "#111" }}>{city}</option>
+            ))}
+          </select>
+        </div>
+
         <Link to="/" style={{ color: "var(--text-secondary)" }}>Movies</Link>
         {user?.role === "THEATRE_OWNER" && (
           <Link to="/owner/dashboard" style={{ color: "var(--text-secondary)" }}>My Theatres</Link>
