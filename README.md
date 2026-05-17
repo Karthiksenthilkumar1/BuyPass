@@ -29,6 +29,7 @@ graph TD
         Booking[Booking Engine - Transactions]
         Catalog[Movie Catalog]
         Theatre[Theatre & Screen Mgmt]
+        Scheduling[Show Scheduling & Discovery]
     end
     
     Backend --- CoreModules[Core Modules]
@@ -43,8 +44,8 @@ Built for high-concurrency seat selection. Our backend utilizes **Prisma Transac
 
 ### 🎭 Multi-Portal Experience
 A unified platform with distinct visual identities:
-- **Consumer View**: Vibrant, cinematic, and immersive.
-- **Partner View**: Clean, professional, and data-driven for business operations.
+- **Consumer View**: Vibrant, cinematic discovery portal with location-based filtering (City selector) and intuitive date-based showtime exploration.
+- **Partner View**: Clean, professional Theatre Management system for owners to build screen layouts and schedule shows using interactive modals.
 
 ### 🛡️ Role-Based Security (RBAC)
 Granular access control ensuring that Theatre Owners only manage their properties, while Admins oversee the entire ecosystem, and Users enjoy a protected browsing experience.
@@ -90,6 +91,8 @@ Granular access control ensuring that Theatre Owners only manage their propertie
 
 ## 🗺️ Future Roadmap
 - [x] **Asset Management**: Dynamic form builder for theatre screen layouts and comprehensive Theatre Management system.
+- [x] **Show Scheduling**: Partner portal integration for scheduling movie shows across owned screens.
+- [x] **Smart Discovery**: Global state management for location (City) and Date-based filtering for seamless customer booking.
 - [ ] **Digital Passes**: QR code generation and mobile check-in system.
 - [ ] **Financial Bridge**: Integration with Stripe/Razorpay for live payments.
 - [ ] **Real-time Engine**: WebSocket integration for live seat occupancy updates.
