@@ -55,6 +55,9 @@ const Navbar: React.FC = () => {
         {user?.role === "ADMIN" && (
           <Link to="/admin" style={{ color: "var(--text-secondary)" }}>Admin</Link>
         )}
+        {user && user.role !== "THEATRE_OWNER" && user.role !== "ADMIN" && (
+          <Link to="/my-tickets" style={{ color: "var(--text-secondary)" }}>My Tickets</Link>
+        )}
         
         {user ? (
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>

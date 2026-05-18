@@ -87,7 +87,87 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
     if (error instanceof Error && error.message === "SEATS_ALREADY_BOOKED") {
       return res.status(400).json({ message: "One or more seats are already booked" });
     }
-    console.error("Create booking error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getUserBookings = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const bookings = await prisma.booking.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        show: {
+          include: {
+            movie: true,
+            screen: {
+              include: {
+                theatre: true,
+              },
+            },
+          },
+        },
+        tickets: {
+          include: {
+            seat: true,
+          }
+        },
+      },
+    });
+
+    res.json(bookings);
+  } catch (error) {
+    console.error("Get user bookings error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getBookingById = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { id } = req.params;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        show: {
+          include: {
+            movie: true,
+            screen: {
+              include: {
+                theatre: true,
+              },
+            },
+          },
+        },
+        tickets: {
+          include: {
+            seat: true,
+          }
+        },
+      },
+    });
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (booking.userId !== userId) {
+      return res.status(403).json({ message: "Forbidden: Not your booking" });
+    }
+
+    res.json(booking);
+  } catch (error) {
+    console.error("Get booking error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
