@@ -33,13 +33,19 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
 
     // 2. Create booking in a transaction with availability check
     const booking = await prisma.$transaction(async (tx) => {
-      // Check availability inside the transaction
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
       const existingBookings = await tx.ticket.findMany({
         where: {
           seatId: { in: seatIds },
           booking: {
             showId: showId,
-            status: "CONFIRMED",
+            OR: [
+              { status: "CONFIRMED" },
+              {
+                status: "PENDING",
+                createdAt: { gte: tenMinutesAgo }
+              }
+            ]
           },
         },
       });
@@ -66,7 +72,7 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
           totalAmount: finalAmount,
           platformFee,
           taxes,
-          status: "CONFIRMED",
+          status: "PENDING",
           tickets: {
             create: seatIds.map((seatId: string) => ({
               seatId,

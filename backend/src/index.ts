@@ -6,6 +6,7 @@ import movieRoutes from "./routes/movie.routes";
 import showRoutes from "./routes/show.routes";
 import bookingRoutes from "./routes/booking.routes";
 import theatreRoutes from "./routes/theatre.routes";
+import paymentRoutes from "./routes/payment.routes";
 import prisma from "./lib/prisma";
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use("/api/movies", movieRoutes);
 app.use("/api/shows", showRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/theatres", theatreRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // Health Check Route
 app.get("/api/health", async (req: Request, res: Response) => {

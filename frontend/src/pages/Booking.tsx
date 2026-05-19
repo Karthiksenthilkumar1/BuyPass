@@ -71,8 +71,7 @@ const Booking: React.FC = () => {
     try {
       const response = await api.post("/bookings", { showId: id, seatIds: selectedSeats });
       const bookingId = response.data.booking.id;
-      alert("Booking Confirmed!");
-      navigate(`/ticket/${bookingId}`);
+      navigate(`/checkout/${bookingId}`);
     } catch (error: any) {
       alert(error.response?.data?.message || "Booking failed");
     } finally {

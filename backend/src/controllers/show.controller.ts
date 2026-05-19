@@ -18,7 +18,6 @@ const showInclude = {
     },
   },
   bookings: {
-    where: { status: "CONFIRMED" as const },
     include: {
       tickets: true,
     },
@@ -38,9 +37,12 @@ export const getShowDetails = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Show not found" });
     }
 
-    // Map booked seat IDs
+    // Map booked seat IDs (both confirmed and pending locks from last 10 minutes)
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
     const bookedSeatIds = new Set(
-      show.bookings.flatMap((b) => b.tickets.map((t) => t.seatId))
+      show.bookings
+        .filter((b) => b.status === "CONFIRMED" || (b.status === "PENDING" && b.createdAt >= tenMinutesAgo))
+        .flatMap((b) => b.tickets.map((t) => t.seatId))
     );
 
     // Format the response

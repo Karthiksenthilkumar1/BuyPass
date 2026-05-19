@@ -14,6 +14,7 @@ import OwnerDashboard from "./pages/OwnerDashboard";
 import TheatreManager from "./pages/TheatreManager";
 import Ticket from "./pages/Ticket";
 import MyTickets from "./pages/MyTickets";
+import Checkout from "./pages/Checkout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./index.css";
 
@@ -39,6 +40,11 @@ function App() {
             <Route path="/ticket/:id" element={
               <ProtectedRoute allowedRoles={["USER", "THEATRE_OWNER", "ADMIN"]}>
                 <Ticket />
+              </ProtectedRoute>
+            } />
+            <Route path="/checkout/:id" element={
+              <ProtectedRoute allowedRoles={["USER", "THEATRE_OWNER", "ADMIN"]}>
+                <Checkout />
               </ProtectedRoute>
             } />
             <Route path="/my-tickets" element={
